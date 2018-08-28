@@ -1,9 +1,9 @@
-#Tax Refund Service with Hyperledger Fabric
-
+Tax Refund Service with Hyperledger Fabric
+=======
 Tax refund for purchase of goods includes the kinds of situations that illustrate the inefficiencies and distrust in real-world processes. So, we are going to provide the service that blockchains were designed.
 
 Project Introduction
-=======
+--------
 
 We are now in the process of going online tax refund service. We hope to simplify the current real process using our workflow. Implemented on a blockchain, the sequences of transactions following stemps can be carried out an irrevokable and non-repudiable manner. Therefore, we built a block-chain network by utilizing HyperLedger which is suitable for business model.
 
@@ -38,4 +38,4 @@ Design of Tax refund network
 License
 --------
 
-[Apache 2.0](https://github.com/path)
+[Apache 2.0](LICENSE)
