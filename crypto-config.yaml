@@ -1,0 +1,44 @@
+
+OrdererOrgs:
+
+  - Name: TaxRefundOrdererMSP
+    Domain: fabric-taxrefund.com
+    Specs:
+      - Hostname: orderer
+
+PeerOrgs:
+
+  - Name: CustomsOrgMSP
+    Domain: customsorg.fabric-taxrefund.com
+    Template:
+      Count: 1
+    Users:
+      Count: 1
+
+  - Name: TaxRefundOrg1MSP
+    Domain: taxrefundorg1.fabric-taxrefund.com
+    Template:
+      Count: 1
+    Users:
+      Count: 1
+
+  - Name: TaxRefundOrg2MSP
+    Domain: taxrefundorg2.fabric-taxrefund.com
+    Template:
+      Count: 1
+    Users:
+      Count: 1
+
+  - Name: StoreOrg1MSP
+    Domain: storeorg1.fabric-taxrefund.com
+    Template:
+      Count: 1
+    Users:
+      Count: 1
+
+  - Name: StoreOrg2MSP
+    Domain: storeorg2.fabric-taxrefund.com
+    Template:
+      Count: 1
+    Users:
+      Count: 1

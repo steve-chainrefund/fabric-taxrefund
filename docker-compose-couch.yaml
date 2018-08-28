@@ -1,0 +1,136 @@
+# Copyright IBM Corp. All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+version: '2'
+
+networks:
+  tax_refund:
+
+services:
+
+  couchdb-customsorg:
+    container_name: couchdb-customsorg
+    image: hyperledger/fabric-couchdb:x86_64-0.4.7
+    environment:
+      - TZ=Asia/Seoul
+      - COUCHDB_USER=
+      - COUCHDB_PASSWORD=
+    ports:
+      - 5984:5984
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    networks:
+      - tax_refund
+
+  peer0.customsorg.fabric-taxrefund.com:
+    environment:
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb-customsorg:5984
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=
+    depends_on:
+      - orderer.fabric-taxrefund.com
+      - couchdb-customsorg
+
+  couchdb-taxrefundorg1:
+    container_name: couchdb-taxrefundorg1
+    image: hyperledger/fabric-couchdb:x86_64-0.4.7
+    environment:
+      - COUCHDB_USER=
+      - COUCHDB_PASSWORD=
+      - TZ=Asia/Seoul
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - 6984:5984
+    networks:
+      - tax_refund
+
+  peer0.taxrefundorg1.fabric-taxrefund.com:
+    environment:
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb-taxrefundorg1:5984
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=
+    depends_on:
+      - orderer.fabric-taxrefund.com
+      - couchdb-taxrefundorg1
+
+  couchdb-taxrefundorg2:
+    container_name: couchdb-taxrefundorg2
+    image: hyperledger/fabric-couchdb:x86_64-0.4.7
+    environment:
+      - COUCHDB_USER=
+      - COUCHDB_PASSWORD=
+      - TZ=Asia/Seoul
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - 7984:5984
+    networks:
+      - tax_refund
+
+  peer0.taxrefundorg2.fabric-taxrefund.com:
+    environment:
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb-taxrefundorg2:5984
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=
+    depends_on:
+      - orderer.fabric-taxrefund.com
+      - couchdb-taxrefundorg2
+
+  couchdb-storeorg1:
+    container_name: couchdb-storeorg1
+    image: hyperledger/fabric-couchdb:x86_64-0.4.7
+    environment:
+      - COUCHDB_USER=
+      - COUCHDB_PASSWORD=
+      - TZ=Asia/Seoul
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - 8984:5984
+    networks:
+      - tax_refund
+
+  peer0.storeorg1.fabric-taxrefund.com:
+    environment:
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb-storeorg1:5984
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=
+    depends_on:
+      - orderer.fabric-taxrefund.com
+      - couchdb-storeorg1
+
+  couchdb-storeorg2:
+    container_name: couchdb-storeorg2
+    image: hyperledger/fabric-couchdb:x86_64-0.4.7
+    environment:
+      - COUCHDB_USER=
+      - COUCHDB_PASSWORD=
+      - TZ=Asia/Seoul
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - 9984:5984
+    networks:
+      - tax_refund
+
+  peer0.storeorg2.fabric-taxrefund.com:
+    environment:
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb-storeorg2:5984
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=
+    depends_on:
+      - orderer.fabric-taxrefund.com
+      - couchdb-storeorg2

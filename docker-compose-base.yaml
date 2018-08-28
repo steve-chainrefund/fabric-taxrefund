@@ -1,0 +1,158 @@
+
+version: '2'
+
+networks:
+  tax_refund:
+
+services:
+
+  ca.fabric-taxrefund.com:
+    image: hyperledger/fabric-ca
+    environment:
+      - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
+      - FABRIC_CA_SERVER_CA_NAME=ca.fabric-taxrefund.com
+      - FABRIC_CA_SERVER_CA_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.customsorg.fabric-taxrefund.com-cert.pem
+      - FABRIC_CA_SERVER_CA_KEYFILE=/etc/hyperledger/fabric-ca-server-config/468faabe9f8966cdf453285295946a5adea7e27c441f46370f5c0937124813c7_sk
+      - FABRIC_CA_SERVER_TLS_ENABLED=true
+      - FABRIC_CA_SERVER_TLS_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.customsorg.fabric-taxrefund.com-cert.pem
+      - FABRIC_CA_SERVER_TLS_KEYFILE=/etc/hyperledger/fabric-ca-server-config/fef6ce5d013d2f006d722dbaddb42976568317cd2fb0ee8bac3331f1c646f5d4_sk
+      - TZ=Asia/Seoul
+    ports:
+      - 7054:7054
+
+    volumes:
+      - ./crypto-config/peerOrganizations/customsorg.fabric-taxrefund.com/ca:/etc/hyperledger/fabric-ca-server-config
+      - ./ca-config/fabric-ca-server-config.yaml:/etc/hyperledger/fabric-ca-server/fabric-ca-server-config.yaml
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+
+
+    command: sh -c 'fabric-ca-server start -c /etc/hyperledger/fabric-ca-server/fabric-ca-server-config.yaml -b admin:1234 -d'
+
+    container_name: ca.fabric-taxrefund.com
+
+  orderer.fabric-taxrefund.com:
+    container_name: orderer.fabric-taxrefund.com
+    image: hyperledger/fabric-orderer:x86_64-1.1.0
+    environment:
+      - ORDERER_GENERAL_LOGLEVEL=debug
+      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      - ORDERER_GENERAL_GENESISMETHOD=file
+      - ORDERER_GENERAL_GENESISFILE=/etc/hyperledger/fabric/configtx/genesis.block
+      - ORDERER_GENERAL_LOCALMSPID=TaxRefundOrdererMSP
+      - ORDERER_GENERAL_LOCALMSPDIR=/etc/hyperledger/fabric/msp
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=${COMPOSE_PROJECT_NAME}_tax_refund
+
+
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/orderer
+    command: orderer
+    ports:
+      - 7050:7050
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+      - ./channel-artifacts:/etc/hyperledger/fabric/configtx
+      - ./crypto-config/ordererOrganizations/fabric-taxrefund.com/orderers/orderer.fabric-taxrefund.com/msp:/etc/hyperledger/fabric/msp
+
+
+  peer0.taxrefundorg1.fabric-taxrefund.com:
+    container_name: taxrefundorg1.fabric-taxrefund.com
+    extends:
+      file: peer-base.yaml
+      service: peer-base
+    environment:
+      - CORE_PEER_ID=peer0.taxrefundorg1.fabric-taxrefund.com
+      - CORE_PEER_LOCALMSPID=TaxRefundOrg1MSP
+      - CORE_PEER_ADDRESS=peer0.taxrefundorg1.fabric-taxrefund.com:7051
+
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric
+    command: peer node start
+    ports:
+      - 7051:7051
+      - 7053:7053
+    volumes:
+        - /var/run/:/host/var/run/
+        - ./channel-artifacts:/opt/gopath/src/github.com/hyperledger/fabric/peer/channel-artifacts
+        - ./chaincode:/opt/gopath/src/github.com/chaincode
+        - ./crypto-config/peerOrganizations/taxrefundorg1.fabric-taxrefund.com/peers/peer0.taxrefundorg1.fabric-taxrefund.com/msp:/etc/hyperledger/fabric/msp
+
+  peer0.taxrefundorg2.fabric-taxrefund.com:
+      container_name: taxrefundorg2.fabric-taxrefund.com
+      extends:
+            file: peer-base.yaml
+            service: peer-base
+      environment:
+        - CORE_PEER_ID=peer0.taxrefundorg2.fabric-taxrefund.com
+        - CORE_PEER_LOCALMSPID=TaxRefundOrg2MSP
+        - CORE_PEER_ADDRESS=peer0.taxrefundorg2.fabric-taxrefund.com:7051
+      working_dir: /opt/gopath/src/github.com/hyperledger/fabric
+      command: peer node start
+      ports:
+        - 11051:7051
+        - 11053:7053
+      volumes:
+          - /var/run/:/host/var/run/
+          - ./chaincode:/opt/gopath/src/github.com/chaincode
+          - ./crypto-config/peerOrganizations/taxrefundorg2.fabric-taxrefund.com/peers/peer0.taxrefundorg2.fabric-taxrefund.com/msp:/etc/hyperledger/fabric/msp
+
+  peer0.customsorg.fabric-taxrefund.com:
+    container_name: customsorg.fabric-taxrefund.com
+    extends:
+          file: peer-base.yaml
+          service: peer-base
+    environment:
+      - CORE_PEER_ID=peer0.customsorg.fabric-taxrefund.com
+      - CORE_PEER_LOCALMSPID=CustomsOrgMSP
+      - CORE_PEER_ADDRESS=peer0.customsorg.fabric-taxrefund.com:7051
+
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric
+    command: peer node start
+    ports:
+      - 8051:7051
+      - 8053:7053
+    volumes:
+        - /var/run/:/host/var/run/
+        - ./chaincode:/opt/gopath/src/github.com/chaincode
+        - ./crypto-config/peerOrganizations/customsorg.fabric-taxrefund.com/peers/peer0.customsorg.fabric-taxrefund.com/msp:/etc/hyperledger/fabric/msp
+
+
+  peer0.storeorg1.fabric-taxrefund.com:
+      container_name: storeorg1.fabric-taxrefund.com
+      extends:
+        file: peer-base.yaml
+        service: peer-base
+      environment:
+        - CORE_PEER_ID=peer0.storeorg1.fabric-taxrefund.com
+        - CORE_PEER_LOCALMSPID=StoreOrg1MSP
+        - CORE_PEER_ADDRESS=peer0.storeorg1.fabric-taxrefund.com:7051
+
+      working_dir: /opt/gopath/src/github.com/hyperledger/fabric
+      command: peer node start
+      ports:
+        - 9051:7051
+        - 9053:7053
+      volumes:
+          - /var/run/:/host/var/run/
+          - ./chaincode:/opt/gopath/src/github.com/chaincode
+          - ./crypto-config/peerOrganizations/storeorg1.fabric-taxrefund.com/peers/peer0.storeorg1.fabric-taxrefund.com/msp:/etc/hyperledger/fabric/msp
+
+
+  peer0.storeorg2.fabric-taxrefund.com:
+      container_name: storeorg2.fabric-taxrefund.com
+      extends:
+        file: peer-base.yaml
+        service: peer-base
+      environment:
+        - CORE_PEER_ID=peer0.storeorg2.fabric-taxrefund.com
+        - CORE_PEER_LOCALMSPID=StoreOrg2MSP
+        - CORE_PEER_ADDRESS=peer0.storeorg2.fabric-taxrefund.com:7051
+
+      working_dir: /opt/gopath/src/github.com/hyperledger/fabric
+      command: peer node start
+      ports:
+        - 10051:7051
+        - 10053:7053
+      volumes:
+        - /var/run/:/host/var/run/
+        - ./chaincode:/opt/gopath/src/github.com/chaincode
+        - ./crypto-config/peerOrganizations/storeorg2.fabric-taxrefund.com/peers/peer0.storeorg2.fabric-taxrefund.com/msp:/etc/hyperledger/fabric/msp

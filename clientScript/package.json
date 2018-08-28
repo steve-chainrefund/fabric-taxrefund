@@ -1,0 +1,25 @@
+{
+    "name": "tax-refund",
+    "version": "1.0.0",
+    "description": "Hyperledger Fabric Tax Refund Application",
+    "main": "fabcar.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "dependencies": {
+        "buffer-reader": "^0.1.0",
+        "fabric-ca-client": "~1.1.0",
+        "fabric-client": "~1.1.0",
+        "grpc": "^1.6.0",
+        "pg": "^7.4.3"
+    },
+    "author": "Anthony O'Dowd",
+    "license": "Apache-2.0",
+    "keywords": [
+        "Hyperledger",
+        "Fabric",
+        "Tax",
+        "Refund",
+        "Application"
+    ]
+}

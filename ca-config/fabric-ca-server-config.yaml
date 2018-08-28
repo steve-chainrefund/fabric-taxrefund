@@ -1,0 +1,156 @@
+version: 1.1.0
+
+port: 7054
+
+debug: true
+
+crlsizelimit: 512000
+
+tls:
+  enabled: true
+  certfile: ca.customsorg.fabric-taxrefund.com-cert.pem
+  keyfile: 468faabe9f8966cdf453285295946a5adea7e27c441f46370f5c0937124813c7_sk
+  clientauth:
+    type: noclientcert
+    certfiles:
+
+ca:
+  name: ca.fabric-taxrefund.com
+  keyfile:
+  certfile:
+  chainfile:
+
+crl:
+  expiry: 24h
+
+registry:
+  maxenrollments: -1
+
+  identities:
+     - name: admin
+       pass: 1234
+       type: Admin
+       affiliation: ""
+       attrs:
+          hf.Registrar.Roles: "Client.customer,Client.store,Client.refunder,Client.customs"
+          hf.Registrar.DelegateRoles: "Client.customer,Client.store,Client.refunder,Client.customs"
+          hf.Revoker: true
+          hf.IntermediateCA: true
+          hf.GenCRL: true
+          hf.Registrar.Attributes: "*"
+          hf.AffiliationMgr: true
+
+db:
+  type: sqlite3
+  datasource: fabric-ca-server.db
+
+
+  tls:
+      enabled: false
+      certfiles:
+
+      client:
+        certfile:
+        keyfile:
+
+
+ldap:
+
+   enabled: false
+   url: ldap://<adminDN>:<adminPassword>@<host>:<port>/<base>
+   tls:
+      certfiles:
+      client:
+         certfile:
+         keyfile:
+   attribute:
+
+      names: ['uid','member']
+      converters:
+         - name:
+           value:
+      mps:
+         groups:
+            - name:
+              value:
+
+affiliations:
+   refunder:
+      - org1
+      - org2
+   customs:
+      - org
+   store:
+      - org1
+      - eorg2
+   customer:
+
+
+signing:
+    default:
+      usage:
+        - digital signature
+      expiry: 8760h
+    profiles:
+      ca:
+         usage:
+           - cert sign
+           - crl sign
+         expiry: 43800h
+         caconstraint:
+           isca: true
+           maxpathlen: 0
+      tls:
+         usage:
+            - signing
+            - key encipherment
+            - server auth
+            - client auth
+            - key agreement
+         expiry: 8760h
+
+
+csr:
+   cn: fabric-ca-server
+   names:
+      - C: KOR
+        ST: "SEOUL"
+        L:
+        O: Hyperledger
+        OU: Fabric
+   hosts:
+     - ubuntu
+     - localhost
+   ca:
+      expiry: 131400h
+      pathlength: 1
+
+
+bccsp:
+    default: SW
+    sw:
+        hash: SHA2
+        security: 256
+        filekeystore:
+            keystore: msp/keystore
+
+
+cacount:
+
+cafiles:
+
+intermediate:
+  parentserver:
+    url:
+    caname:
+
+  enrollment:
+    hosts:
+    profile:
+    label:
+
+  tls:
+    certfiles:
+    client:
+      certfile:
+      keyfile:

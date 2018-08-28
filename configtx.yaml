@@ -1,0 +1,100 @@
+
+Profiles:
+
+    TaxRefundOrdererGenesis:
+        Orderer:
+            <<: *OrdererDefaults
+            Organizations:
+                 - *TaxRefundOrderer
+        Consortiums:
+            TaxRefundConsortium:
+                Organizations:
+                    - *CustomsOrg
+                    - *TaxRefundOrg1
+                    - *TaxRefundOrg2
+                    - *StoreOrg1
+                    - *StoreOrg2
+    TaxRefundChannel:
+        Consortium: TaxRefundConsortium
+        Application:
+            <<: *ApplicationDefaults
+            Organizations:
+                - *CustomsOrg
+                - *TaxRefundOrg1
+                - *TaxRefundOrg2
+                - *StoreOrg1
+                - *StoreOrg2
+
+
+Organizations:
+
+    - &TaxRefundOrderer
+        Name: TaxRefundOrdererMSP
+        ID: TaxRefundOrdererMSP
+        MSPDir: crypto-config/ordererOrganizations/fabric-taxrefund.com/msp
+
+    - &CustomsOrg
+        Name: CustomsOrgMSP
+        ID: CustomsOrgMSP
+        MSPDir: crypto-config/peerOrganizations/customsorg.fabric-taxrefund.com/msp
+        AnchorPeers:
+            - Host:	peer0.customsorg.fabric-taxrefund.com
+              Port: 7051
+
+    - &TaxRefundOrg1
+        Name: TaxRefundOrg1MSP
+        ID: TaxRefundOrg1MSP
+        MSPDir: crypto-config/peerOrganizations/taxrefundorg1.fabric-taxrefund.com/msp
+        AnchorPeers:
+            - Host: peer0.taxrefundorg1.fabric-taxrefund.com
+              Port: 7051
+
+    - &TaxRefundOrg2
+        Name: TaxRefundOrg2MSP
+        ID: TaxRefundOrg2MSP
+        MSPDir: crypto-config/peerOrganizations/taxrefundorg2.fabric-taxrefund.com/msp
+        AnchorPeers:
+            - Host: peer0.taxrefundorg2.fabric-taxrefund.com
+              Port: 7051
+
+    - &StoreOrg1
+        Name: StoreOrg1MSP
+        ID: StoreOrg1MSP
+        MSPDir: crypto-config/peerOrganizations/storeorg1.fabric-taxrefund.com/msp
+        AnchorPeers:
+            - Host: peer0.storeorg1.fabric-taxrefund.com
+              Port: 7051
+
+
+    - &StoreOrg2
+        Name: StoreOrg2MSP
+        ID: StoreOrg2MSP
+        MSPDir: crypto-config/peerOrganizations/storeorg2.fabric-taxrefund.com/msp
+        AnchorPeers:
+            - Host: peer0.storeorg2.fabric-taxrefund.com
+              Port: 7051
+
+
+Orderer: &OrdererDefaults
+
+    OrdererType: solo
+
+    Addresses:
+        - orderer.fabric-taxrefund.com:7050
+
+    BatchTimeout: 1s
+
+    BatchSize:
+        MaxMessageCount: 20
+        AbsoluteMaxBytes: 10 MB
+        PreferredMaxBytes: 256 KB
+
+    Kafka:
+        Brokers:
+            - 127.0.0.1:9092
+
+    Organizations:
+
+Application: &ApplicationDefaults
+
+    Organizations:
