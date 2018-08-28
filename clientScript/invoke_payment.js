@@ -1,83 +1,38 @@
-'use strict';
-/*
-* Copyright IBM Corp All Rights Reserved
-*
-* SPDX-License-Identifier: Apache-2.0
-*/
+
 /*
  * Chaincode Invoke
  */
 
-
 var Fabric_Client = require('fabric-client');
-var Fabric_CA_Client = require('fabric-ca-client');
 var path = require('path');
-var util = require('util');
-var os = require('os');
-//
 var fabric_client = new Fabric_Client();
-
-// setup the fabric network
 var channel = fabric_client.newChannel('ch-taxrefund');
-// var peer = fabric_client.newPeer('grpc://chainrefund.chain-taxrefund.com:8051');
 var peer = fabric_client.newPeer('grpc:localhost:10051');
-// var peer = fabric_client.newPeer('grpc://ec2-13-209-41-39.ap-northeast-2.compute.amazonaws.com:7051');
 channel.addPeer(peer);
 channel.addPeer(fabric_client.newPeer('grpc://localhost:9051'));
-// channel.addPeer(fabric_client.newPeer('grpc://ec2-52-78-238-132.ap-northeast-2.compute.amazonaws.com:7051'));
 var order = fabric_client.newOrderer('grpc://localhost:7050');
-// var order = fabric_client.newOrderer('grpc://ec2-13-124-220-188.ap-northeast-2.compute.amazonaws.com:7050')
 channel.addOrderer(order);
-
 var store_path = path.join(__dirname, 'hfc-key-store');
-
-var fabric_ca_client = null;
 var tx_id = null;
 var request = {};
-
-var path = require('path');
 var util = require('util');
-var os = require('os');
-//
-
-console.log(' Store path:' + store_path);
-var user_id = 'bong';
 //User ID
-var client_id = 'bruce';
-var store_id = 'bong';
+var customer_id = 'customer1';
+var store_id = 'store1';
+var refunder_id = 'refunder1';
+var funtionName = 'invokePending'
+var chaincodeId = 'cc-payment'
 var tx_id_string=null
-//amount for tax refund
-var amount = '1230';
 
-var currentDate = new Date();
-// var datetime = currentDate.getFullYear()+"-"
-// 	+(currentDate.getMonth()+1)+"-"+
-// 	currentDate.getDate()+" "+
-// 	currentDate.getHours()+":"+
-//     currentDate.getMinutes()+":"+
-//     currentDate.getSeconds();
-
-// create the key value store as defined in the fabric-client/config/default.json 'key-value-store' setting
 Fabric_Client.newDefaultKeyValueStore({
     path: store_path
 }).then((state_store) => {
-    // assign the store to the fabric client
+
     fabric_client.setStateStore(state_store);
     var crypto_suite = Fabric_Client.newCryptoSuite();
-    // use the same location for the state store (where the users' certificate are kept)
-    // and the crypto store (where the users' keys are kept)
     var crypto_store = Fabric_Client.newCryptoKeyStore({path: store_path});
     crypto_suite.setCryptoKeyStore(crypto_store);
     fabric_client.setCryptoSuite(crypto_suite);
-
-    var tlsOptions = {
-        trustedRoots: [],
-        verify: false
-    };
-    console.log('0. "client" user - {client_id: ' + store_id + '} from persistence');
-
-    fabric_ca_client = new Fabric_CA_Client('http://localhost:7054', tlsOptions, 'ca.fabric-taxrefund.com', crypto_suite);
-    // get the enrolled user from persistence, this user will sign all requests
     return fabric_client.getUserContext(store_id, true);
 }).then(async (user_from_store) => {
     if (user_from_store && user_from_store.isEnrolled()) {
@@ -86,45 +41,39 @@ Fabric_Client.newDefaultKeyValueStore({
         throw new Error('Failed to get "client user" - {client_id: ' + store_id + '} .... run registerUser.js');
     }
 
-
     tx_id = fabric_client.newTransactionID();
-    console.log("4. Assigning transaction_id: ", tx_id.getTransactionID());
-
-    // get a transaction id object based on the current user assigned to fabric client
-
-    let requestData = new Object();
-    let object1 = new Object();
-    let object2 = new Object();
-    let object3 = new Object();
-    object1.reference_id = "123"
-    object1.tx_status = "123"
-    object1.request_type = "Refund-Complete"
-    object1.refund_type = "123"
-    object1.cur_tx_id = "123"
-    object1.prev_tx_id = "123"
-    object3.prodNm = "123"
-    object3.IneNo = "123"
-    object3.prdCode = "123"
-    object3.indQty = "123"
-    object3.indPrice = "123"
-    object3.salePrice = "123"
-    object3.indVat = "123"
-    object3.indIct = "123"
-    object3.indEdut = "123"
-    object3.indStr = "123"
-    object2.customer_id = "teruwa"
-    object2.taxRefunder_id = "teruwa"
-    object2.store_id = "teruwa"
-    object2.tx_created = "123"
-    object2.purchsSn = "123"
-    object2.saleDatm = "123"
-    object2.totAmt = "123"
-    object2.totQty = "123"
-    object2.totRefund = "123"
-    object2.totVat = "123"
-    object2.totIct = "123"
-    object2.totEdut = "123"
-    object2.totStr = "123"
+    tx_id_string = tx_id.getTransactionID();
+    let requestData = {};
+    let object1 = {};
+    let object2 = {};
+    let object3 = {};
+    object1.reference_id = tx_id_string
+    object1.tx_status = "1"
+    object1.request_type = "101"
+    object1.refund_type = "1"
+    object1.cur_tx_id = tx_id_string
+    object3.prodNm = "123456789"
+    object3.IneNo = "ine-1"
+    object3.prdCode = "TestCode"
+    object3.indQty = "3"
+    object3.indPrice = "390000"
+    object3.salePrice = "130000"
+    object3.indVat = "39000"
+    object3.indIct = "0"
+    object3.indEdut = "0"
+    object3.indStr = "0"
+    object2.customer_id = customer_id
+    object2.taxRefunder_id = refunder_id
+    object2.store_id = store_id
+    object2.purchsSn = "serial-001"
+    object2.saleDatm = new Date.now().toString()
+    object2.totAmt = "390000"
+    object2.totQty = "3"
+    object2.totRefund = "39000"
+    object2.totVat = "39000"
+    object2.totIct = "0"
+    object2.totEdut = "0"
+    object2.totStr = "0"
     object2.details = [];
     object2.details.push(object3)
 
@@ -133,34 +82,19 @@ Fabric_Client.newDefaultKeyValueStore({
 
 
     try {
-        // first setup the client for this org
-
-
-        // will need the transaction ID string for the event registration later
-        tx_id_string = tx_id.getTransactionID();
-
-        // must send the proposal to endorsing peers
         request = {
-            //targets: let default to the peer assigned to the client
-            chaincodeId: 'cc-payment',
-            chaincodeVersion: 'v1.1',
-            fcn: 'invokeRefundComplete',
+            chaincodeId: chaincodeId,
+            chaincodeVersion: 'v1.0',
+            fcn: funtionName,
             args: ['Client.refunder', JSON.stringify(requestData)],
             chainId: 'ch-taxrefund',
             txId: tx_id
         };
 
         let results = await channel.sendTransactionProposal(request);
-
-        // the returned object has both the endorsement results
-        // and the actual proposal, the proposal will be needed
-        // later when we send a transaction to the orderer
         var proposalResponses = results[0];
         var proposal = results[1];
 
-        // lets have a look at the responses to see if they are
-        // all good, if good they will also include signatures
-        // required to be committed
         var all_good = true;
         for (var i in proposalResponses) {
             let one_good = false;
@@ -173,9 +107,7 @@ Fabric_Client.newDefaultKeyValueStore({
             }
             all_good = all_good & one_good;
         }
-        // console.log('<------------------------------------------------------------------------------------------------------->')
-        // console.log('result: ' + JSON.stringify(results))
-        // console.log('<------------------------------------------------------------------------------------------------------->')
+
         if (all_good) {
 
             var error_message = null;
@@ -186,8 +118,6 @@ Fabric_Client.newDefaultKeyValueStore({
                     proposalResponses[0].response.status, proposalResponses[0].response.message,
                     proposalResponses[0].response.payload, proposalResponses[0].endorsement.signature));
 
-                // wait for the channel-based event hub to tell us
-                // that the commit was good or bad on each peer in our organization
                 var promises = [];
                 let event_hubs = fabric_client.newEventHub();
                 event_hubs.setPeerAddr('grpc://localhost:7053');
@@ -218,16 +148,11 @@ Fabric_Client.newDefaultKeyValueStore({
                             console.log(err);
                             reject(err);
                         },
-                        // the default for 'unregister' is true for transaction listeners
-                        // so no real need to set here, however for 'disconnect'
-                        // the default is false as most event hubs are long running
-                        // in this use case we are using it only once
                         {unregister: true, disconnect: true}
                     );
 
                 });
                 promises.push(invokeEventPromise);
-
 
                 var orderer_request = {
                     txId: tx_id,
@@ -235,8 +160,6 @@ Fabric_Client.newDefaultKeyValueStore({
                     proposal: proposal
                 };
                 var sendPromise = channel.sendTransaction(orderer_request);
-                // put the send to the orderer last so that the events get registered and
-                // are ready for the orderering and committing
                 promises.push(sendPromise);
                 let results = await Promise.all(promises);
                 console.log(util.format('------->>> R E S P O N S E : %j', results));
@@ -285,20 +208,19 @@ Fabric_Client.newDefaultKeyValueStore({
         console.log(message);
         throw new Error(message);
     }
-// }).then((results) => {
-//     console.log('8. Send transaction completed: ' + JSON.stringify(results));
-//     // check the results in the order the promises were added to the promise all list
-//     if (results && results[0] && results[0].status === 'SUCCESS') {
-//         console.log('9. Successfully sent transaction to the orderer.');
-//     } else {
-//         console.error('Failed to order the transaction. Error code: ' + response.status);
-//     }
-//
-//     if (results && results[1] && results[1].event_status === 'VALID') {
-//         console.log('10. Successfully committed the change to the ledger by the peer');
-//     } else {
-//         console.log('Transaction failed to be committed to the ledger due to ::' + results[1].event_status);
-//     }
+}).then((results) => {
+    console.log('8. Send transaction completed: ' + JSON.stringify(results));
+    if (results && results[0] && results[0].status === 'SUCCESS') {
+        console.log('9. Successfully sent transaction to the orderer.');
+    } else {
+        console.error('Failed to order the transaction. Error code: ' + response.status);
+    }
+
+    if (results && results[1] && results[1].event_status === 'VALID') {
+        console.log('10. Successfully committed the change to the ledger by the peer');
+    } else {
+        console.log('Transaction failed to be committed to the ledger due to ::' + results[1].event_status);
+    }
 }).catch((err) => {
     console.error('Failed to invoke successfully :: ' + err);
 });

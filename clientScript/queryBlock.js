@@ -1,23 +1,12 @@
-'use strict';
 /*
-* Copyright IBM Corp All Rights Reserved
-*
-* SPDX-License-Identifier: Apache-2.0
-*/
-/*
- * Chaincode query
+ * Block Data query
  */
 
 
 var Fabric_Client = require('fabric-client');
-var Fabric_CA_Client = require('fabric-ca-client');
 var path = require('path');
-var charset= require('charset')
-var jschardet = require('jschardet');
-var iso88592 = require('iso-8859-2');
 var fabric_client = new Fabric_Client();
 
-// setup the fabric network
 var channel = fabric_client.newChannel('ch-taxrefund');
 var peer = fabric_client.newPeer('grpc://localhost:7051');
 var orderer= fabric_client.newOrderer('grpc://localhost:7050')
@@ -26,28 +15,18 @@ channel.addOrderer(orderer)
 //
 var member_user = null;
 var store_path = path.join(__dirname, 'hfc-key-store');
-var tx_id = null;
-var user_id = 'teruwa';
-var role_type = null;
-var fabric_ca_client = null;
+var user_id = 'store1';
 var crypto_store = null;
-var request = {};
 
-
-// create the key value store as defined in the fabric-client/config/default.json 'key-value-store' setting
 Fabric_Client.newDefaultKeyValueStore({
     path: store_path
 }).then((state_store) => {
-    // assign the store to the fabric client
     fabric_client.setStateStore(state_store);
     var crypto_suite = Fabric_Client.newCryptoSuite();
-    // use the same location for the state store (where the users' certificate are kept)
-    // and the crypto store (where the users' keys are kept)
     crypto_store = Fabric_Client.newCryptoKeyStore({path: store_path});
     crypto_suite.setCryptoKeyStore(crypto_store);
     fabric_client.setCryptoSuite(crypto_suite);
 
-    // get the enrolled user from persistence, this user will sign all requests
     return fabric_client.getUserContext(user_id, true);
 }).then((user_from_store) => {
     if (user_from_store && user_from_store.isEnrolled()) {
@@ -58,43 +37,21 @@ Fabric_Client.newDefaultKeyValueStore({
     } else {
         throw new Error('Failed to get ' + user_id + '.... run registerUser.js');
     }
-
-    // if you want to scan data by transaction id, this code will be executed
-    tx_id = '274fd846e4d24beaca273ba13a6b9ba4a429f52c6595455b512b2b7563434e4e';
-
-
-    // send the query proposal to the peer
-    // return channel.queryBlock(8, peer);
-    // return channel.getGenesisBlock(orderer);
     return channel.queryInfo(peer);
-    // return channel.queryTransaction(tx_id,peer);
-    // return channel.getOrderers();
-    // return channel.getChannelConfig();
-
 }).then(async (query_responses) => {
-    // query_responses could have more than one  results if there multiple peers were used as targets
     console.log('3. Query_responses Data ------> ' + JSON.stringify(query_responses));
     if (query_responses) {
         if (!query_responses[0] instanceof Error) {
             console.error("error from query = ", query_responses[0]);
         } else {
-            // console.log("5. Response is ", query_responses[0].toString());
-            // var result = query_responses.data.data[0].payload.data.actions[0].payload.chaincode_proposal_payload.input;
-            // var result = query_responses.currentBlockHash.buffer;
-            // var result = query_responses.data.data[0].signature;
 
             // Total Block Size
             let blockLength = query_responses.height.low;
-
-
-            // let blockLength = 8;
-            // console.log("4. Get Peer Query has been completed, Result: " + (query_responses.data.data[0].buffer.toString('ascii')));
             console.log("4. BlockInfo Query has been completed, Block Size: " + blockLength);
             let promises = [];
             for (let i = blockLength - 2; i > (blockLength - 3); i--) {
                 let queryBlockList = new Promise((resolve, reject) => {
                     channel.queryBlock(i, peer).then((blockResponse) => {
-                        console.log("blockResponse " + i)
                         if (blockResponse) {
                             resolve(blockResponse);
                         } else {
@@ -174,10 +131,8 @@ Fabric_Client.newDefaultKeyValueStore({
                     let proposal_chaincode_type = null;
                     let proposal_function_name = null;
 
-                    //정규표현식으로 데이터 추출하기 위한 변수 지정
                     var regex = /\S+/g;
                     var match = [];
-                    // console.log("Encoded 88592: "+text);
                     if (match = proposal_chaincode.toString('ascii').match(regex)) {
 
                         // case: instantiate or upgrade chaincode
